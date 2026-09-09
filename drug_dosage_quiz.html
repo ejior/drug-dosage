@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP13 成人急救藥物劑量 - 隨機測驗</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            margin-bottom: 20px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            font-size: 1.3em;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            line-height: 1.8;
+        }
+
+        input[type="text"] {
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 1em;
+            width: 120px;
+            text-align: center;
+            margin: 0 5px;
+            transition: border-color 0.15s ease-in-out;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        input[type="text"][readonly] {
+            cursor: not-allowed;
+        }
+
+        .correct {
+            border-color: var(--correct-color) !important;
+            background-color: #e8f5e9 !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .incorrect {
+            border-color: var(--incorrect-color) !important;
+            background-color: #ffebee !important;
+            color: #721c24;
+            text-decoration: line-through;
+        }
+
+        #feedback {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 30px;
+            margin-bottom: 20px;
+        }
+
+        .correct-text { color: var(--correct-color); }
+        .incorrect-text { color: var(--incorrect-color); }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #004494;
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-check {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            background-color: #28a745;
+        }
+
+        .btn-check:hover {
+            background-color: #218838;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        #result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #result-screen h2 {
+            font-size: 2em;
+            color: var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-app">
+    <h1>TP13 成人急救藥物劑量 測驗</h1>
+    
+    <div id="quiz-area">
+        <div class="progress" id="progress">題目 1 / 60</div>
+        
+        <div class="question-card" id="q-container">
+            <!-- Question HTML will be injected here -->
+        </div>
+
+        <div id="feedback"></div>
+
+        <button class="btn btn-check" id="btn-check" onclick="checkAnswer()">確定答案 (Enter)</button>
+        
+        <div class="nav-buttons">
+            <button class="btn" id="btn-prev" onclick="prevQuestion()">◄ 上一題</button>
+            <button class="btn" id="btn-next" onclick="nextQuestion()">下一題 ►</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h2>測驗完成！</h2>
+        <p style="font-size: 1.5em; margin: 20px 0;" id="final-score"></p>
+        <button class="btn" onclick="location.reload()" style="font-size: 1.2em; padding: 15px 30px;">重新測驗 (打亂順序)</button>
+    </div>
+</div>
+
+<script>
+    const rawQuestions = [
+        "1. 心臟停止時，Epinephrine 的劑量為 [1] mg IVP，每 3-5 分鐘重複一次。",
+        "2. 心臟停止時，Amiodarone 的第一劑劑量為 [300] mg IVP。",
+        "3. 心臟停止時，Amiodarone 的第二劑劑量為 [150] mg IVP。",
+        "4. 心臟停止時，Lidocaine 的第一劑劑量為 [1-1.5] mg/kg IVP。",
+        "5. 心臟停止時，Lidocaine 的第二劑劑量為 [0.5-0.75] mg/kg IVP。",
+        "6. 復甦後照護，使用簡易型 Epi Drip，將 1 支 Epinephrine 加入 N/S [500] ml，此時濃度為 2 mcg/ml。",
+        "7. 復甦後照護的 Epi Drip 調整點滴數從每秒 1 滴開始，此時劑量為 [6] mcg/min。",
+        "8. 心搏過緩時，Atropine 的劑量為 1 mg IVP，每 3-5 分鐘重複，最大劑量為 [3] mg。",
+        "9. [STEMI] 病人不可給予 Atropine。",
+        "10. 心搏過緩時，Dopamine 的劑量為每分鐘 IV 靜注 [5-20] mcg/kg。",
+        "11. 心搏過緩時，Epinephrine 的劑量為每分鐘 IV 靜注 [2-10] mcg。",
+        "12. 心搏過速時，Adenosine 第一劑給予 [6] mg 快速 IVP。",
+        "13. 心搏過速時，Adenosine 第二劑視需要給予 [12] mg。",
+        "14. 心搏過速時，Procainamide 劑量為每分鐘 20-50 mg IV drip，最大劑量 [17] mg/kg。",
+        "15. Procainamide 維持靜注為每分鐘 [1-4] mg。",
+        "16. 若有 QT 或 [CHF] 延長，則應避免使用 Procainamide。",
+        "17. 心搏過速時，Amiodarone 第一劑為 [150] mg IV drip，給予 10 分鐘。",
+        "18. 心搏過速時，Amiodarone 之後前 6 小時以每分鐘 [1] mg 的速率維持輸注。",
+        "19. 急性肺水腫給予 NTG，每 5 分鐘建議服用 1 次，到院前最多服用 [3] 次。",
+        "20. 急性肺水腫給予 NTG 應持續監測其收縮壓 ≧ [90] mmHg。",
+        "21. NTG 在脈搏小於 50 或 ≧ [100] 次/分時應小心使用。",
+        "22. NTG 在 [48] 小時內使用過壯陽藥物之病人不可服用。",
+        "23. 低血壓 (PUMP) 時，Epinephrine IV infusion 劑量為 [0.1-0.5] mcg/kg/min。",
+        "24. 低血壓 (PUMP) 時，若收縮壓 < [70] mmHg 且後送時間較長，可使用 Dirty Epi Drip。",
+        "25. 符合癲癇重積狀態為連續抽搐超過 [5] 分鐘，或在 5 分鐘內有 2 次發作且意識未能恢復。",
+        "26. 癲癇重積給予 Midazolam，成人與青少年單次劑量為 [5] mg。",
+        "27. Midazolam 可經由肌肉注射或靜脈緩推 [2] 分鐘。",
+        "28. 癲癇重積給予 Midazolam，成人與青少年到院前總劑量最高為 [10] mg。",
+        "29. 低血糖定義為血糖低於 [60] mg/dl 或顯示 low。",
+        "30. 低血糖若已建立靜脈路徑給予 D10W，若未給予 D10W，可給予 D50W [1-4] Amps。",
+        "31. 呼吸困難氣霧治療，僅限 ≧ 1 歲且無 [心肌梗塞|MI] 病史之病人。",
+        "32. 氣霧治療中，抗膽鹼藥物 Atrovent 劑量為 [0.5] mg / 2ml / amp。",
+        "33. 氣霧治療中，β2 促進劑 Bricanyl 劑量為 [5] mg / 2ml / amp。",
+        "34. 氣霧治療中，混合型藥物 Combivent 包含 ipratropium 0.5 mg + albuterol [2.5] mg。",
+        "35. 氣霧治療混合抗膽鹼與β2促進劑後，氧氣流量設定為 [6] L/min。",
+        "36. 1 至 2 歲病人氣霧治療給予 1/2 藥物劑量，並用 N/S 稀釋至總量 [4] ml。",
+        "37. 呼吸困難甚為嚴重時，醫療指導下可使用皮下注射 1:1000 濃度之 epinephrine [0.3-0.5] mg。",
+        "38. 呼吸困難皮下注射 epinephrine，每 15-20 分鐘給 1 次，直到總共給予 [3] 個 doses。",
+        "39. 呼吸困難皮下注射 epinephrine 注意事項：[45] 歲以下，無心臟病、高血壓等才可使用。",
+        "40. 呼吸困難皮下注射 epinephrine，若頻脈 ≧ [150] /min 時不可使用。",
+        "41. 過敏性休克不穩定病人，考慮給予 1:1000 製劑腎上腺素，成人與青少年給予 [0.3] mg 肌肉注射。",
+        "42. 過敏性休克，小兒給予 [0.01] mg/kg（至多 0.3 mg）肌肉注射。",
+        "43. 過敏性休克若不穩定狀況持續，可每 [10] 分鐘重覆一次。",
+        "44. 缺血性胸痛給予 NTG，每 5 分鐘建議服用 1 次，到院前最多服用 [3] 次。",
+        "45. 缺血性胸痛給予 Aspirin，無禁忌症時給予病人口服 [300] mg。",
+        "46. 若病人急性前胸痛到後背，或雙上肢收縮壓差異 > [20] mmHg，疑似主動脈剝離，不建議使用 Aspirin。",
+        "47. 成人外傷到院前止痛給予 Tramadol，適用於急性外傷導致疼痛 VAS ≧ [3] 分。",
+        "48. Tramadol 注射劑量為 50-100 mg [肌肉|IM] 注射。",
+        "49. Tramadol 禁忌症包含曾對此藥或 [鴉片|鴉片類] 藥物過敏、懷孕、昏迷。",
+        "50. 創傷性休克給予 Transamine 需符合外傷發生 [3] 小時以內。",
+        "51. 創傷性休克給予 Transamine 的血壓條件為收縮壓 < [90] mmHg 或心跳 ≧ 120。",
+        "52. Transamine 使用劑量為抽取 [1000|1,000] mg 加入 N/S 100 ml 滴注約 10 分鐘。",
+        "53. 如有 [產後大出血|大出血]，考慮大口徑輸液，EMTP 可考慮使用 Transamine。",
+        "54. 壓砸傷給予 NaHCO3，將 [4] 支針劑（約 70meq）加入 N/S 500 ml 全速滴注。",
+        "55. 壓砸傷給予 NaHCO3，上述輸液治療僅可以給予 [一|1|1次] 次為限。",
+        "56. 成人氣管內管插管條件：意識不清無法保護呼吸道，血氧濃度經過 BVM 正壓呼吸後仍未逹 [85] %。",
+        "57. 成人氣管內管插管需備有 [潮氣末二氧化碳|Capnography|ETCO2] 監測設備實施插管位置確認。",
+        "58. 外傷性腦傷：GCS= [3] 且無法以口咽呼吸道及 BVM 維持 ≧ 85%時，經線上醫療指導始得插管。",
+        "59. 聲門上呼吸道裝置(SGA)適用於昏迷傷病患，且需要較長時間（≧ [10] 分鐘）轉送至醫院時。",
+        "60. 聲門上呼吸道裝置(SGA)適用於 [頸椎] 傷患無法持續用下顎推舉法維持暢通的呼吸道時。"
+    ];
+
+    let questions = [];
+    let currentIndex = 0;
+
+    // 初始化與隨機打亂題目
+    function initQuiz() {
+        questions = rawQuestions.map((q, origIdx) => {
+            let inputs = [];
+            // 移除原本的題號 (例如 "1. ") 讓隨機出題時看起來自然
+            let textWithoutNumber = q.replace(/^\d+\.\s*/, '');
+            
+            let htmlContent = textWithoutNumber.replace(/\[(.*?)\]/g, (match, p1) => {
+                const possibleAnswers = p1.split('|').map(a => a.trim().toLowerCase());
+                inputs.push({ answers: possibleAnswers, original: possibleAnswers[0] });
+                return `<input type="text" class="answer-input" autocomplete="off">`;
+            });
+
+            return {
+                id: origIdx,
+                html: htmlContent,
+                inputs: inputs,
+                answered: false,
+                userVals: [],
+                isCorrect: false
+            };
+        });
+
+        // Fisher-Yates 隨機打亂
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+
+        currentIndex = 0;
+        loadQuestion(currentIndex);
+    }
+
+    function loadQuestion(idx) {
+        const q = questions[idx];
+        document.getElementById('progress').innerText = `題目 ${idx + 1} / ${questions.length}`;
+        document.getElementById('q-container').innerHTML = q.html;
+        
+        const inputs = document.querySelectorAll('.answer-input');
+        
+        if (q.answered) {
+            // 已作答狀態
+            inputs.forEach((inp, i) => {
+                inp.value = q.userVals[i] || '';
+                inp.readOnly = true;
+                if (q.inputs[i].answers.includes(inp.value.trim().toLowerCase())) {
+                    inp.classList.add('correct');
+                } else {
+                    inp.classList.add('incorrect');
+                }
+            });
+            document.getElementById('btn-check').style.display = 'none';
+            showFeedback(idx);
+        } else {
+            // 未作答狀態
+            inputs.forEach((inp, i) => {
+                inp.value = q.userVals[i] || '';
+                inp.addEventListener('keypress', function(e) {
+                    if(e.key === 'Enter') checkAnswer();
+                });
+            });
+            if(inputs.length > 0) inputs[0].focus();
+            
+            document.getElementById('btn-check').style.display = 'block';
+            document.getElementById('feedback').innerHTML = '';
+        }
+        
+        document.getElementById('btn-prev').disabled = (idx === 0);
+        
+        const btnNext = document.getElementById('btn-next');
+        if (idx === questions.length - 1) {
+            btnNext.innerText = '看測驗總結 ✔';
+            btnNext.style.backgroundColor = '#17a2b8';
+        } else {
+            btnNext.innerText = '下一題 ►';
+            btnNext.style.backgroundColor = 'var(--primary-color)';
+        }
+    }
+
+    function checkAnswer() {
+        const q = questions[currentIndex];
+        if (q.answered) return; // 避免重複檢查
+        
+        const inputs = document.querySelectorAll('.answer-input');
+        let allCorrect = true;
+        q.userVals = [];
+        
+        inputs.forEach((inp, i) => {
+            const val = inp.value.trim().toLowerCase();
+            q.userVals.push(inp.value);
+            inp.readOnly = true; // 鎖定輸入
+            
+            if (q.inputs[i].answers.includes(val)) {
+                inp.classList.add('correct');
+            } else {
+                inp.classList.add('incorrect');
+                allCorrect = false;
+            }
+        });
+        
+        q.answered = true;
+        q.isCorrect = allCorrect;
+        document.getElementById('btn-check').style.display = 'none';
+        showFeedback(currentIndex);
+    }
+
+    function showFeedback(idx) {
+        const q = questions[idx];
+        const fb = document.getElementById('feedback');
+        if (q.isCorrect) {
+            fb.innerHTML = `<span class="correct-text">✔ 答對了！</span>`;
+        } else {
+            let correctAnswersText = q.inputs.map(inp => inp.original).join('、');
+            fb.innerHTML = `<span class="incorrect-text">✘ 答錯了！<br>正確答案為： ${correctAnswersText}</span>`;
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            loadQuestion(currentIndex);
+        }
+    }
+
+    function nextQuestion() {
+        // 如果還沒檢查答案，點擊下一題自動先送出檢查
+        if (!questions[currentIndex].answered) {
+            checkAnswer();
+            // 延遲跳轉讓使用者看一下答案，或由使用者手動點擊下一題
+            // 這裡設定為需要再按一次「下一題」才會跳轉，體驗較好
+            return; 
+        }
+
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            loadQuestion(currentIndex);
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-area').style.display = 'none';
+        const resultScreen = document.getElementById('result-screen');
+        resultScreen.style.display = 'block';
+
+        let score = questions.filter(q => q.isCorrect).length;
+        let total = questions.length;
+        let percentage = (score / total) * 100;
+
+        let comment = '';
+        if (percentage >= 80) comment = '太神啦！你對急救藥物已經瞭若指掌！';
+        else if (percentage >= 60) comment = '表現不錯，再針對錯誤的地方複習一下吧！';
+        else comment = '需要再多加練習喔，急救知識不容馬虎！';
+
+        document.getElementById('final-score').innerHTML = `
+            答對題數：<strong style="color: #28a745;">${score}</strong> / ${total}<br>
+            正確率：${percentage.toFixed(1)}%<br>
+            <span style="font-size: 0.8em; color: #666; display: block; margin-top: 15px;">${comment}</span>
+        `;
+    }
+
+    // 啟動測驗
+    initQuiz();
+</script>
+
+</body>
+</html>
